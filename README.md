@@ -1,6 +1,8 @@
 # Bitcoin Keeper Signing Server
 
-Source for the Bitcoin Keeper Signing Server. The server handles assisted signing and inheritance requests. Its runtime depends on external configuration and services. The unit tests use disposable local identities and do not need production credentials.
+Source for the Bitcoin Keeper Signing Server. The server provides assisted signing APIs. Its runtime depends on external configuration and services. The unit tests use disposable local identities and do not need production credentials.
+
+The repository retains Inheritance Key routes from an earlier flow. Current Keeper inheritance uses Miniscript wallet rules and does not make Inheritance Key requests to this server.
 
 ## Requirements
 
@@ -17,7 +19,7 @@ python3 scripts/check-source-secrets.py
 python3 scripts/check-source-secrets.py --history
 ```
 
-The history check requires a full clone with fetched branches and tags. Run `git fetch --all --tags --prune` first when checking a fork. Tests exercise local fixtures; they do not prove live signing, recovery, or inheritance behavior.
+The history check requires a full clone with fetched branches and tags. Run `git fetch --all --tags --prune` first when checking a fork. Tests exercise local fixtures; they do not prove live signing or recovery behavior.
 
 ## Local configuration
 
@@ -25,8 +27,8 @@ Copy `.env.example` to a local `.env` and supply only disposable development val
 
 ## Project layout
 
-- `src/routes/`: HTTP route wiring for signer and inheritance endpoints
-- `src/services/`: assisted signing, inheritance, mail, and notifications
+- `src/routes/`: HTTP route wiring for signer APIs and retained Inheritance Key endpoints
+- `src/services/`: assisted signing, retained Inheritance Key code, mail, and notifications
 - `src/wallet/`: wallet and key derivation logic
 - `src/utilities/`: cryptography, policy, and service helpers
 - `tests/`: isolated unit tests
