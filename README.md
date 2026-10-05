@@ -31,4 +31,4 @@ Copy `.env.example` to a local `.env` and supply only disposable development val
 - `src/utilities/`: cryptography, policy, and service helpers
 - `tests/`: isolated unit tests
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for changes and [SECURITY.md](SECURITY.md) for reporting security issues. Licensed under ISC; see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for changes and [SECURITY.md](SECURITY.md) for reporting security issues. The public distribution uses MIT while retaining the ISC notice for inherited code; see [LICENSE](LICENSE), [LICENSE-ISC](LICENSE-ISC), and [NOTICE.md](NOTICE.md).

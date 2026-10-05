@@ -14,7 +14,7 @@
     "url": "git+https://github.com/KeeperCommunity/SigningServer.git"
   },
   "author": "Parsh",
-  "license": "ISC",
+  "license": "MIT AND ISC",
   "bugs": {
     "url": "https://github.com/KeeperCommunity/SigningServer/issues"
   },
