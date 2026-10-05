@@ -1,0 +1,27 @@
+/node_modules
+/dist
+# misc
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.omix-platform.local
+.env.staging-omix-platform.local
+.env.production-omix-platform.local
+
+logfile.log
+*.pem
+
+/asset/acme-challenge
+/coverage
+# Runtime credentials and local audit output must not enter source control.
+.env*
+!.env.example
+*.pem
+*.p8
+*.key
+*ServiceAccPrivKey.json
+*service-account*.json
+bhrelay-*.json
+.readiness/
