@@ -21,7 +21,10 @@ class SigningServer {
   private configure(): void {
     this.app.set("router", express.Router());
     this.app.set("config", config);
-    this.app.use(morgan("combined", { stream: { write: message => logger.info(message.trim()) } }));
+    // Avoid logging request URLs, referrers or user agents with sensitive values.
+    this.app.use(morgan(":method :status :res[content-length] :response-time ms", {
+      stream: { write: message => logger.info(message.trim()) },
+    }));
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use(initializeRoutes(this.app));
@@ -38,4 +41,3 @@ class SigningServer {
   }
 }
 new SigningServer();
-
