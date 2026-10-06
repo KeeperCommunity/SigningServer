@@ -53,5 +53,9 @@
     "tslint": "5.12.1",
     "typescript": "5.0.4",
     "@types/express": "4.16.0"
+  },
+  "overrides": {
+    "pbkdf2": "3.1.7",
+    "proxy-addr": "2.0.8"
   }
 }
