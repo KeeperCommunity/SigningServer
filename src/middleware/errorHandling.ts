@@ -6,7 +6,7 @@ import { logger } from "../utilities/logger";
 /**
  * Middleware function to handle errors occurring in routes.
  *
- * Logs the error details using the logger and sends a JSON response
+ * Logs a fixed failure message and sends a JSON response
  * with the appropriate HTTP status code and error message.
  *
  * @param err - The error object, which can be an instance of `Error` or any other type.
@@ -20,7 +20,8 @@ import { logger } from "../utilities/logger";
  * The error message is extracted from the `Error` object if available, or a generic message is used.
  */
 export const handleRouteError = (err: any, req: Request, res: Response, next: NextFunction) => {
-  logger.error(`Error in route ${req.path}:`, err);
+  // Provider and database exceptions can contain request or configuration data.
+  logger.error("Signing Server route failed");
   const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
   const statusCode = err.statusCode || StatusCodes.BAD_REQUEST;
   res.status(statusCode).json({

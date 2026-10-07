@@ -40,7 +40,7 @@ export const validateRequest = (schema: AnyZodObject) =>
         });
       }
       // Pass other errors to the global error handler
-      logger.error('Unhandled Error in Validation Middleware:', error);
+      logger.error('Validation middleware failed');
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ err: 'An unexpected error occurred' });
       // use next(error) if we've a dedicated error handling middleware
       // return next(error);

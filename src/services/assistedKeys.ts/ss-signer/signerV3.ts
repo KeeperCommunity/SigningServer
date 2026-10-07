@@ -876,7 +876,7 @@ export class SignerV3 {
 
         if (tx.FCM) pushServerKeyNotification([tx.FCM], NOTIFICATION_TYPE.SIGNED_DELAYED_TRANSACTION, { id: tx.txid, signedTx: signedPSBT })
       } catch (err) {
-        console.log(`Failed to process delayed transaction: ${err.message}`);
+        console.log("Delayed transaction processing failed");
       }
     }
   };
@@ -917,7 +917,7 @@ export class SignerV3 {
         }
 
       } catch (err) {
-        console.error(`Failed to process delayed policy update ${update.policyId}: ${err.message}`);
+        console.error("Delayed policy update processing failed");
       }
     }
   };
