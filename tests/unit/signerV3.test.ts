@@ -1203,7 +1203,7 @@ describe("SignerV3", () => {
       );
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Failed to process delayed policy update policy2: Singer not found against vault: invalid-signer"
+        "Delayed policy update processing failed"
       );
       consoleErrorSpy.mockRestore();
     });
@@ -1435,7 +1435,7 @@ describe("SignerV3", () => {
       );
 
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to process delayed transaction")
+        "Delayed transaction processing failed"
       );
       signPSBT.mockRestore();
       getWalletCreds.mockRestore();
