@@ -1035,11 +1035,20 @@ export class SignerV3 {
     let [docV3] = await signerV3Model.find({ id: xfp }); // won't be available typically, unless previous migration
     // request failed at updateCosignersToSignerMap step
     if (!docV3) {
+      // V2 stores the TOTP key inside verifier.twoFAKey, while V3 stores the
+      // key as a string. Passing the V2 subdocument to Mongoose stringifies it.
+      const storedVerifier = policy?.verification?.verifier;
+      const verifier = typeof storedVerifier === "string" ? storedVerifier : storedVerifier?.twoFAKey;
+      if (typeof verifier !== "string" || !verifier) throw new Error("Invalid legacy signer verifier");
+      const policyV3 = {
+        ...(typeof policy.toObject === "function" ? policy.toObject() : policy),
+        verification: { method: policy.verification.method, verifier },
+      };
       const signerInstance = new signerV3Model({
         id: xfp,
         isBIP85,
         xIndex,
-        policy,
+        policy: policyV3,
       });
 
       await signerInstance.save((err) => {

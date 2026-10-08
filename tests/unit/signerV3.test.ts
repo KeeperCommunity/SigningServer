@@ -1658,13 +1658,18 @@ describe("SignerV3", () => {
 
   describe("migrateSignersV2ToV3", () => {
     it("migrates a legacy signer without returning its stored verifier", async () => {
-      const storedVerifierKey = "UNIT_TEST_STORED_TOTP_SECRET";
+      const storedVerifierKey = "JBSWY3DPEHPK3PXP";
+      const verificationToken = authenticator.generate(storedVerifierKey);
       const policy = {
         verification: {
           method: VerificationType.TWO_FA,
           verifier: { twoFAKey: storedVerifierKey },
         },
         restrictions: { none: false, maxTransactionAmount: 10000 },
+        toObject: jest.fn(() => ({
+          verification: { method: VerificationType.TWO_FA, verifier: { twoFAKey: storedVerifierKey } },
+          restrictions: { none: false, maxTransactionAmount: 10000 },
+        })),
       };
       const save = jest.fn((callback) => callback && callback());
       const signerV3Model: any = jest.fn().mockImplementation((data) => ({
@@ -1707,7 +1712,12 @@ describe("SignerV3", () => {
           verifier: null,
         });
         expect(JSON.stringify(result)).not.toContain(storedVerifierKey);
-        expect(signerV3Model).toHaveBeenCalledWith(expect.objectContaining({ policy }));
+        const savedPolicy = signerV3Model.mock.calls[0][0].policy;
+        expect(policy.toObject).toHaveBeenCalled();
+        expect(savedPolicy.verification).toEqual({ method: VerificationType.TWO_FA, verifier: storedVerifierKey });
+        expect(savedPolicy.restrictions).toEqual(policy.restrictions);
+        expect(authenticator.verify({ secret: savedPolicy.verification.verifier, token: verificationToken })).toBe(true);
+        expect(policy.verification.verifier).toEqual({ twoFAKey: storedVerifierKey });
         expect(save).toHaveBeenCalled();
         expect(insertMany).toHaveBeenCalled();
       } finally {
