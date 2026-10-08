@@ -2,6 +2,7 @@ import SignerV3 from "../../src/services/assistedKeys.ts/ss-signer/signerV3";
 import dbV2 from "../../src/databases/dbV2";
 import bitHyveWallet from "../../src/wallet/bithyve";
 import {
+  CosignersMapUpdateAction,
   VerificationType,
   PermittedAction,
 } from "../../src/interfaces/signer";
@@ -1652,6 +1653,66 @@ describe("SignerV3", () => {
           },
         })
       ).rejects.toThrow("Policy mismatch: spending restrictions do not match");
+    });
+  });
+
+  describe("migrateSignersV2ToV3", () => {
+    it("migrates a legacy signer without returning its stored verifier", async () => {
+      const storedVerifier = "UNIT_TEST_STORED_TOTP_SECRET";
+      const policy = {
+        verification: {
+          method: VerificationType.TWO_FA,
+          verifier: storedVerifier,
+        },
+        restrictions: { none: false, maxTransactionAmount: 10000 },
+      };
+      const save = jest.fn((callback) => callback && callback());
+      const signerV3Model: any = jest.fn().mockImplementation((data) => ({
+        ...data,
+        save,
+      }));
+      signerV3Model.find = jest.fn().mockResolvedValue([]);
+      (dbV2.getSignerV2Model as jest.Mock).mockReturnValue({
+        find: jest.fn().mockResolvedValue([{ xIndex: mockSigner.xIndex, policy }]),
+      });
+      (dbV2.getSignerV3Model as jest.Mock).mockReturnValue(signerV3Model);
+      const insertMany = jest.fn().mockResolvedValue([]);
+      const cosignersMapModel: any = jest.fn().mockImplementation((data) => data);
+      cosignersMapModel.find = jest.fn().mockResolvedValue([]);
+      cosignersMapModel.insertMany = insertMany;
+      (dbV2.getCoSignersToSignerMapV3Model as jest.Mock).mockReturnValue(cosignersMapModel);
+      const derive = jest.spyOn(bitHyveWallet, "getRandomXpub").mockReturnValue({
+        xpub: mockSigner.xpub,
+        xfp: mockSigner.xfp,
+        masterFingerprint: mockSigner.masterFingerprint,
+        derivationPath: mockSigner.derivationPath,
+        xIndex: mockSigner.xIndex,
+      });
+      const mapUpdates = [{
+        cosignersId: "unit-test-cosigners",
+        signerId: mockSigner.xfp,
+        action: CosignersMapUpdateAction.ADD,
+      }];
+
+      try {
+        const result = await SignerV3.migrateSignersV2ToV3(
+          "unit-test-vault",
+          "unit-test-app",
+          mapUpdates
+        );
+
+        expect(result.migrationSuccessful).toBe(true);
+        expect(result.setupData.verification).toEqual({
+          method: VerificationType.TWO_FA,
+          verifier: null,
+        });
+        expect(JSON.stringify(result)).not.toContain(storedVerifier);
+        expect(signerV3Model).toHaveBeenCalledWith(expect.objectContaining({ policy }));
+        expect(save).toHaveBeenCalled();
+        expect(insertMany).toHaveBeenCalled();
+      } finally {
+        derive.mockRestore();
+      }
     });
   });
 });

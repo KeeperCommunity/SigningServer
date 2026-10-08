@@ -1059,7 +1059,12 @@ export class SignerV3 {
         bhXpub: xpub,
         masterFingerprint,
         derivationPath,
-        verification: policy.verification,
+        // This migration reuses an existing verifier. Older Keeper clients only
+        // consume migrationSuccessful, so never send the stored TOTP secret back.
+        verification: {
+          method: policy.verification.method,
+          verifier: null,
+        },
       },
     };
   };
