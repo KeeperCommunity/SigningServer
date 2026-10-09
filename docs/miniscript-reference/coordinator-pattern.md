@@ -1,3 +1,7 @@
+> [!WARNING]
+> **BITME-ONLY REFERENCE MATERIAL:** The policies and flows shown in this file (e.g., exactly one immediate path, server-side hold/veto) belong to Bitme, NOT Keeper.
+> Keeper's actual wallet policy (including Miniscript inheritance paths) and server constraints differ. Any future implementation or tests for Keeper must use the actual Keeper Miniscript policy.
+
 
 ## How a spend actually works
 
