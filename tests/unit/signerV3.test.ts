@@ -2,6 +2,7 @@ import SignerV3 from "../../src/services/assistedKeys.ts/ss-signer/signerV3";
 import dbV2 from "../../src/databases/dbV2";
 import bitHyveWallet from "../../src/wallet/bithyve";
 import {
+  CosignersMapUpdateAction,
   VerificationType,
   PermittedAction,
 } from "../../src/interfaces/signer";
@@ -1652,6 +1653,119 @@ describe("SignerV3", () => {
           },
         })
       ).rejects.toThrow("Policy mismatch: spending restrictions do not match");
+    });
+  });
+
+  describe("migrateSignersV2ToV3", () => {
+    it("migrates a legacy signer without returning its stored verifier", async () => {
+      const storedVerifierKey = "JBSWY3DPEHPK3PXP";
+      const verificationToken = authenticator.generate(storedVerifierKey);
+      const policy = {
+        verification: {
+          method: VerificationType.TWO_FA,
+          verifier: { twoFAKey: storedVerifierKey },
+        },
+        restrictions: { none: false, maxTransactionAmount: 10000 },
+        toObject: jest.fn(() => ({
+          verification: { method: VerificationType.TWO_FA, verifier: { twoFAKey: storedVerifierKey } },
+          restrictions: { none: false, maxTransactionAmount: 10000 },
+        })),
+      };
+      const save = jest.fn((callback) => callback && callback());
+      const signerV3Model: any = jest.fn().mockImplementation((data) => ({
+        ...data,
+        save,
+      }));
+      signerV3Model.find = jest.fn().mockResolvedValue([]);
+      (dbV2.getSignerV2Model as jest.Mock).mockReturnValue({
+        find: jest.fn().mockResolvedValue([{ xIndex: mockSigner.xIndex, policy }]),
+      });
+      (dbV2.getSignerV3Model as jest.Mock).mockReturnValue(signerV3Model);
+      const insertMany = jest.fn().mockResolvedValue([]);
+      const cosignersMapModel: any = jest.fn().mockImplementation((data) => data);
+      cosignersMapModel.find = jest.fn().mockResolvedValue([]);
+      cosignersMapModel.insertMany = insertMany;
+      (dbV2.getCoSignersToSignerMapV3Model as jest.Mock).mockReturnValue(cosignersMapModel);
+      const derive = jest.spyOn(bitHyveWallet, "getRandomXpub").mockReturnValue({
+        xpub: mockSigner.xpub,
+        xfp: mockSigner.xfp,
+        masterFingerprint: mockSigner.masterFingerprint,
+        derivationPath: mockSigner.derivationPath,
+        xIndex: mockSigner.xIndex,
+      });
+      const mapUpdates = [{
+        cosignersId: "unit-test-cosigners",
+        signerId: mockSigner.xfp,
+        action: CosignersMapUpdateAction.ADD,
+      }];
+
+      try {
+        const result = await SignerV3.migrateSignersV2ToV3(
+          "unit-test-vault",
+          "unit-test-app",
+          mapUpdates
+        );
+
+        expect(result.migrationSuccessful).toBe(true);
+        expect(result.setupData.verification).toEqual({
+          method: VerificationType.TWO_FA,
+          verifier: null,
+        });
+        expect(JSON.stringify(result)).not.toContain(storedVerifierKey);
+        const savedPolicy = signerV3Model.mock.calls[0][0].policy;
+        expect(policy.toObject).toHaveBeenCalled();
+        expect(savedPolicy.verification).toEqual({ method: VerificationType.TWO_FA, verifier: storedVerifierKey });
+        expect(savedPolicy.restrictions).toEqual(policy.restrictions);
+        expect(authenticator.verify({ secret: savedPolicy.verification.verifier, token: verificationToken })).toBe(true);
+        expect(policy.verification.verifier).toEqual({ twoFAKey: storedVerifierKey });
+        expect(save).toHaveBeenCalled();
+        expect(insertMany).toHaveBeenCalled();
+      } finally {
+        derive.mockRestore();
+      }
+    });
+
+    it("keeps the verifier redacted when retrying after a V3 signer was saved", async () => {
+      const storedVerifierKey = "UNIT_TEST_RETRY_TOTP_SECRET";
+      const policy = {
+        verification: {
+          method: VerificationType.TWO_FA,
+          verifier: { twoFAKey: storedVerifierKey },
+        },
+      };
+      const signerV3Model: any = jest.fn();
+      signerV3Model.find = jest.fn().mockResolvedValue([{ id: mockSigner.xfp, policy }]);
+      (dbV2.getSignerV2Model as jest.Mock).mockReturnValue({
+        find: jest.fn().mockResolvedValue([{ xIndex: mockSigner.xIndex, policy }]),
+      });
+      (dbV2.getSignerV3Model as jest.Mock).mockReturnValue(signerV3Model);
+      const cosignersMapModel: any = jest.fn().mockImplementation((data) => data);
+      cosignersMapModel.find = jest.fn().mockResolvedValue([]);
+      cosignersMapModel.insertMany = jest.fn().mockResolvedValue([]);
+      (dbV2.getCoSignersToSignerMapV3Model as jest.Mock).mockReturnValue(cosignersMapModel);
+      const derive = jest.spyOn(bitHyveWallet, "getRandomXpub").mockReturnValue({
+        xpub: mockSigner.xpub,
+        xfp: mockSigner.xfp,
+        masterFingerprint: mockSigner.masterFingerprint,
+        derivationPath: mockSigner.derivationPath,
+        xIndex: mockSigner.xIndex,
+      });
+
+      try {
+        const result = await SignerV3.migrateSignersV2ToV3(
+          "unit-test-vault",
+          "unit-test-app",
+          [{ cosignersId: "unit-test-cosigners", signerId: mockSigner.xfp, action: CosignersMapUpdateAction.ADD }]
+        );
+
+        expect(result.migrationSuccessful).toBe(true);
+        expect(result.setupData.verification).toEqual({ method: VerificationType.TWO_FA, verifier: null });
+        expect(JSON.stringify(result)).not.toContain(storedVerifierKey);
+        expect(signerV3Model).not.toHaveBeenCalled();
+        expect(cosignersMapModel.insertMany).toHaveBeenCalled();
+      } finally {
+        derive.mockRestore();
+      }
     });
   });
 });
