@@ -7,3 +7,5 @@ Keep tests self-contained and use generated, disposable identities. Do not requi
 Open a focused pull request describing the behavior, risks, and verification. Keep dependency changes in the lockfile. If a security issue or suspected credential exposure is involved, follow [SECURITY.md](SECURITY.md) before opening a public issue.
 
 Runtime dependency remediation and the preserved mobile error contract are recorded in [docs/SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md). Review those notes alongside audit output; a passing local suite does not verify hosted provider delivery.
+
+Follow the [pull request review policy](.github/REVIEW_POLICY.md) and complete the PR template before requesting review.
