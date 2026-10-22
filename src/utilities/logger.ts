@@ -7,12 +7,12 @@ export const logger = winston.createLogger({
 });
 
 export const unhandledLogger = () => {
-  process.on("unhandledRejection", (reason, promise) => {
-    logger.error(`Unhandled Rejection at: ${promise}\nReason: ${reason}`);
+  process.on("unhandledRejection", () => {
+    logger.error("Unhandled promise rejection");
   });
 
-  process.on("uncaughtException", (error) => {
-    logger.error(`Uncaught Exception: ${error.message}`);
+  process.on("uncaughtException", () => {
+    logger.error("Uncaught exception");
     process.exit(1);
   });
 };

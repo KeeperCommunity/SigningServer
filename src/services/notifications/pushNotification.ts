@@ -104,9 +104,7 @@ export const pushIKNotification = async (
     const { sent } = response.data;
     if (!sent) throw new Error(`keeper-relay send failure`);
   } catch (err) {
-    logger.error(
-      `Failed to send notification for ${options.requestId}, err: ${err}`
-    );
+    logger.error("Inheritance notification delivery failed");
   }
 };
 
@@ -160,6 +158,6 @@ export const pushServerKeyNotification = async (
     const { sent } = response.data;
     if (!sent) throw new Error(`keeper-relay send failure`);
   } catch (err) {
-    logger.error(`Failed to send notification for ${options.id}, err: ${err}`);
+    logger.error("Server Key notification delivery failed");
   }
 };

@@ -275,7 +275,7 @@ class DatabaseV2 {
     );
     const databaseCreds = response[config.DATABASE_SECRET_IDENTIFIER_V2];
     let databaseURL: string;
-    console.log("Connected to:", databaseCreds.name);
+    console.log("Signing Server V2 database configuration loaded");
     if (config.DB_MODE === DATABASE_TYPE.DEV)
       databaseURL = `mongodb+srv://${databaseCreds.name}:${databaseCreds.password}@development.razn9q8.mongodb.net/?retryWrites=true&w=majority`;
     else
