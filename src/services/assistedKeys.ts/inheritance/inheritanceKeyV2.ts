@@ -61,7 +61,7 @@ export class InheritanceKeyServiceV2 {
       const { sent } = response.data;
       if (!sent) throw new Error(`keeper-relay send failure`);
     } catch (err) {
-      logger.error(`Failed to send notification for ${requestId}, err: ${err}`);
+      logger.error("Inheritance V2 notification delivery failed");
     }
   };
 
@@ -79,7 +79,7 @@ export class InheritanceKeyServiceV2 {
         options,
       );
     } catch (err) {
-      logger.error(`Failed to send email for ${emailType}, err: ${err}`);
+      logger.error("Inheritance V2 email delivery failed");
     }
   };
 

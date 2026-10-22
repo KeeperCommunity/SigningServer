@@ -68,7 +68,7 @@ export class InheritanceKeyServiceV3 {
         options,
       );
     } catch (err) {
-      logger.error(`Failed to send email for ${emailType}, err: ${err}`);
+      logger.error("Inheritance V3 email delivery failed");
     }
   };
 
@@ -175,7 +175,7 @@ export class InheritanceKeyServiceV3 {
           if (targets.length) {
             const notificationType = getNotificationType(requestType)
             pushIKNotification(targets, notificationType, { requestId: requestId, requestAutoApprovesIn });
-            logger.info(`Notification sent: ${inheritanceDoc.id}:${requestId}, ${Date()}`);
+            logger.info("Inheritance notification sent");
           }
         }
 
@@ -186,7 +186,7 @@ export class InheritanceKeyServiceV3 {
           if (emails.length) {
             const emailType = this.getEmailType(requestType)
             this.sendEmailsViaMailer(emails, emailType, { requestId: requestId, requestAutoApprovesIn });
-            logger.info(`Email sent: ${inheritanceDoc.id}:${requestId}, ${Date()}`);
+            logger.info("Inheritance email sent");
           }
         }
       }
@@ -362,7 +362,7 @@ export class InheritanceKeyServiceV3 {
       const emails = idx(decryptedPolicy, (_) => _.alert.emails) || [];
       if (emails.length) {
         this.sendEmailsViaMailer(emails, Mailer.EMAIL_TYPE.IKS_SETUP, {});
-        logger.info(`Setup Confirmation email sent: ${doc.id}, ${Date()}`);
+        logger.info("Inheritance setup confirmation email sent");
       }
     }
     doc.policy = updatedEncryptedPolicy;
@@ -852,9 +852,7 @@ export class InheritanceKeyServiceV3 {
           );
 
           pushIKNotification(targets, notificationType, { requestId: request.requestId, requestAutoApprovesIn }); // send notification
-          logger.info(
-            `Notification sent: ${doc.id}:${request.requestId}, ${Date()}`
-          );
+          logger.info("Inheritance notification sent");
           count++;
         }
       }
@@ -910,7 +908,7 @@ export class InheritanceKeyServiceV3 {
 
           const emailType = this.getEmailType((request as InheritanceKeyRequestV3).type)
           this.sendEmailsViaMailer(emails, emailType, { requestId: request.requestId, requestAutoApprovesIn });
-          logger.info(`Emails sent: ${doc.id}:${request.requestId}, ${Date()}`);
+          logger.info("Inheritance emails sent");
           count++;
         }
       }
